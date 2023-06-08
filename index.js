@@ -29,6 +29,7 @@ async function run() {
     const classCollection = client.db("summerSchoolDB").collection("classes");
     const instructorCollection = client.db("summerSchoolDB").collection("instructors");
     const userCollection = client.db("summerSchoolDB").collection("users");
+    const pendingClassCollection = client.db("summerSchoolDB").collection("pendingClasses");
 
     // instructors apis
     app.get('/instructors',async(req,res)=>{
@@ -54,6 +55,20 @@ async function run() {
     app.get('/classes',async(req,res)=>{
         const result =await classCollection.find().toArray()
         res.send(result)
+    })
+
+    app.post('/pendingclasses',async(req,res)=>{
+      const newClass= req.body
+      const result = await pendingClassCollection.insertOne(newClass)
+      res.send(result)
+    })
+
+    app.get('/myclasses/:email',async(req,res)=>{
+      const email=req.params.email
+      // console.log(email);
+      const query={instructorEmail:email}
+      const result=await pendingClassCollection.find(query).toArray()
+      res.send(result)
     })
 
     app.get('/popularclasses',async(req,res)=>{
