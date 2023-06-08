@@ -1,8 +1,8 @@
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 const app =express()
 const port = process.env.PORT || 5000
-require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // middleware
@@ -28,6 +28,7 @@ async function run() {
 
     const classCollection = client.db("summerSchoolDB").collection("classes");
     const instructorCollection = client.db("summerSchoolDB").collection("instructors");
+    const userCollection = client.db("summerSchoolDB").collection("users");
 
     // instructors apis
     app.get('/instructors',async(req,res)=>{
@@ -35,11 +36,29 @@ async function run() {
         res.send(result)
     })
 
+    // users apis
+    app.post('/users',async(req,res)=>{
+      const user=req.body
+      console.log(user);
+      const query={email: user.email}
+      const existingUser=await userCollection.findOne(query)
+      if(existingUser){
+        return res.send({message:'user already exists'})
+      }
+      const result=await userCollection.insertOne(user)
+      res.send(result)
+    })
+
 
     // classes api
     app.get('/classes',async(req,res)=>{
         const result =await classCollection.find().toArray()
         res.send(result)
+    })
+
+    app.get('/popularclasses',async(req,res)=>{
+      const cursor= await classCollection.find().limit(6).toArray()
+      res.send(cursor)
     })
 
     // Send a ping to confirm a successful connection
