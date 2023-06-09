@@ -50,6 +50,37 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/users',async(req,res)=>{
+      const result = await userCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.patch('/makeadminuser/:id',async(req,res)=>{
+      const id = req.params.id
+      // console.log(id);
+      const query={_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+         role:'admin'
+        }
+      }
+      const result = await userCollection.updateOne(query,updateDoc)
+      res.send(result)
+    })
+
+     app.patch('/makeinstructoruser/:id',async(req,res)=>{
+      const id = req.params.id
+      console.log(id);
+      const query={_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+         role:'instructor'
+        }
+      }
+      const result = await userCollection.updateOne(query,updateDoc)
+      res.send(result)
+    })
+
 
     // classes api
     app.get('/classes',async(req,res)=>{
@@ -60,7 +91,7 @@ async function run() {
     app.patch('/classes/:id',async(req,res)=>{
       const id = req.params.id
       const classInfo=req.body
-      console.log(classInfo.price,classInfo.availableSeat);
+      // console.log(classInfo.price,classInfo.availableSeat);
       const query={_id: new ObjectId(id)}
       const updateDoc = {
         $set: {
