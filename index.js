@@ -57,7 +57,29 @@ async function run() {
         res.send(result)
     })
 
-    // app.get('/classes/:id',async(req,res)=>)
+    app.patch('/classes/:id',async(req,res)=>{
+      const id = req.params.id
+      const classInfo=req.body
+      console.log(classInfo.price,classInfo.availableSeat);
+      const query={_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+         price:classInfo.price,
+         availableSeat:classInfo.availableSeat
+        }
+      }
+      const result= await classCollection.updateOne(query,updateDoc)
+      res.send(result)
+    })
+
+    app.patch('/instructorClasses/:id')
+
+    app.get('/classbyname',async(req,res)=>{
+      const name=req.query.name
+      const query={className:name}
+      const result = await classCollection.findOne(query)
+      res.send(result)
+    })
 
     app.post('/pendingclasses',async(req,res)=>{
       const newClass= req.body
@@ -83,6 +105,20 @@ async function run() {
       const result=await pendingClassCollection.updateOne(filter,updateDoc)
       res.send(result)
 
+    })
+
+    app.patch('/instructorClass/:id',async(req,res)=>{
+      const id = req.params.id
+      const {price}=req.body
+      console.log(price);
+      const filter={_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+          price:price
+        },
+      };
+      const result=await pendingClassCollection.updateOne(filter,updateDoc)
+      res.send(result)
     })
 
     app.put('/denyclasses/:id',async(req,res)=>{
@@ -115,6 +151,13 @@ async function run() {
       const result=await pendingClassCollection.find(query).toArray()
       res.send(result)
     })
+
+    // app.get('/myclasses/:id',async(req,res)=>{
+    //   const id =req.params.id
+    //   const query={_id: new ObjectId(id)}
+    //   const result = await pendingClassCollection.findOne(query)
+    //   res.send(result)
+    // })
 
 
     app.get('/popularclasses',async(req,res)=>{
