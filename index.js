@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 const app =express()
+const stripe=require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -31,6 +32,37 @@ async function run() {
     const userCollection = client.db("summerSchoolDB").collection("users");
     const pendingClassCollection = client.db("summerSchoolDB").collection("pendingClasses");
     const cartCollection = client.db("summerSchoolDB").collection("carts");
+    const paymentCollection = client.db("summerSchoolDB").collection("payments");
+
+
+    // payment-intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount=parseInt(price*100)
+    
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types:['card']
+      });
+    
+      res.send({
+        clientSecret:paymentIntent.client_secret,
+      });
+    });
+
+
+    // payment
+
+    app.post('/payments',async(req,res)=>{
+      const payment=req.body
+      const insertedResult= await paymentCollection.insertOne(payment)
+      
+      const query={_id: {$in: payment.cartItems.map(id=> new ObjectId(id))}}
+      const deleteResult = await cartCollection.deleteMany(query)
+      res.send({insertedResult,deleteResult})
+    })
 
     // instructors apis
     app.get('/instructors',async(req,res)=>{
@@ -49,6 +81,13 @@ async function run() {
     app.get('/carts',async(req,res)=>{
       const email=req.query.email
       const result = await cartCollection.find({email:email}).toArray()
+      res.send(result)
+    })
+
+    app.delete('/carts/:id',async(req,res)=>{
+      const id=req.params.id
+      const query={_id: new ObjectId(id)}
+      const result = await cartCollection.deleteOne(query)
       res.send(result)
     })
 
