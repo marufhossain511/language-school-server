@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app =express()
 const port = process.env.PORT || 5000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middleware
 app.use(cors())
@@ -40,7 +40,7 @@ async function run() {
     // users apis
     app.post('/users',async(req,res)=>{
       const user=req.body
-      console.log(user);
+      // console.log(user);
       const query={email: user.email}
       const existingUser=await userCollection.findOne(query)
       if(existingUser){
@@ -57,9 +57,54 @@ async function run() {
         res.send(result)
     })
 
+    // app.get('/classes/:id',async(req,res)=>)
+
     app.post('/pendingclasses',async(req,res)=>{
       const newClass= req.body
       const result = await pendingClassCollection.insertOne(newClass)
+      res.send(result)
+    })
+
+    app.get('/pendingclasses/:id',async(req,res)=>{
+      const id =req.params.id
+      const query={_id: new ObjectId(id)}
+      const result = await pendingClassCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.patch('/pendingclasses/:id',async(req,res)=>{
+      const id = req.params.id
+      const filter={_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+          status:'approved'
+        },
+      };
+      const result=await pendingClassCollection.updateOne(filter,updateDoc)
+      res.send(result)
+
+    })
+
+    app.put('/denyclasses/:id',async(req,res)=>{
+      const id = req.params.id
+      console.log(id);
+      const {feedback}=req.body
+      console.log(feedback);
+      const filter={_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status:'deny',
+          feedback:feedback
+        },
+      };
+      const result=await pendingClassCollection.updateOne(filter,updateDoc,options)
+      res.send(result)
+    })
+
+    app.post('/approvedclasses',async(req,res)=>{
+      const newClass=req.body
+      const result=await classCollection.insertOne(newClass)
       res.send(result)
     })
 
@@ -71,10 +116,12 @@ async function run() {
       res.send(result)
     })
 
+
     app.get('/popularclasses',async(req,res)=>{
       const cursor= await classCollection.find().limit(6).toArray()
       res.send(cursor)
     })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
