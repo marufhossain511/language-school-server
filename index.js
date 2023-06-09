@@ -30,12 +30,28 @@ async function run() {
     const instructorCollection = client.db("summerSchoolDB").collection("instructors");
     const userCollection = client.db("summerSchoolDB").collection("users");
     const pendingClassCollection = client.db("summerSchoolDB").collection("pendingClasses");
+    const cartCollection = client.db("summerSchoolDB").collection("carts");
 
     // instructors apis
     app.get('/instructors',async(req,res)=>{
         const result = await instructorCollection.find().toArray()
         res.send(result)
     })
+
+    // carts apis
+    app.post('/cart',async(req,res)=>{
+      const addClass=req.body
+      // console.log(addClass);
+      const result = await cartCollection.insertOne(addClass)
+      res.send(result)
+    })
+
+    app.get('/carts',async(req,res)=>{
+      const email=req.query.email
+      const result = await cartCollection.find({email:email}).toArray()
+      res.send(result)
+    })
+
 
     // users apis
     app.post('/users',async(req,res)=>{
@@ -87,6 +103,18 @@ async function run() {
         const result =await classCollection.find().toArray()
         res.send(result)
     })
+
+    // app.patch('/classseats/:id',async(req,res)=>{
+    //   const id =req.params.id
+    //   const query={_id: new ObjectId(id)}
+    //   const course=await classCollection.findOne(query)
+    //   const updateDoc={
+    //     $set:{
+    //       availableSeat:course.availableSeat -1
+    //     }
+    //   }
+    //   const result=
+    // })
 
     app.patch('/classes/:id',async(req,res)=>{
       const id = req.params.id
