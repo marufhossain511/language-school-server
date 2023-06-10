@@ -135,6 +135,12 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/users/:email',async(req,res)=>{
+      const email= req.params.email
+      const result = await userCollection.findOne({email:email})
+      res.send(result)
+    })
+
     app.patch('/makeadminuser/:id',async(req,res)=>{
       const id = req.params.id
       // console.log(id);
