@@ -57,17 +57,28 @@ async function run() {
 
     app.post('/payments',async(req,res)=>{
       const payment=req.body
-      const insertedResult= await paymentCollection.insertOne(payment)
-      
+      const insertedResult= await paymentCollection.insertOne(payment) 
       const query={_id: {$in: payment.cartItems.map(id=> new ObjectId(id))}}
       const deleteResult = await cartCollection.deleteMany(query)
       res.send({insertedResult,deleteResult})
+    })
+    app.get('/payments',async(req,res)=>{
+      const email=req.query.email
+      const result = await paymentCollection.find({email:email}).toArray()
+      res.send(result)
     })
 
     // instructors apis
     app.get('/instructors',async(req,res)=>{
         const result = await instructorCollection.find().toArray()
         res.send(result)
+    })
+
+    app.post('/instructors',async(req,res)=>{
+         const newInstructor = req.body
+        //  console.log(newInstructor);
+         const result =await instructorCollection.insertOne(newInstructor)
+         res.send(result)
     })
 
     // carts apis
@@ -170,7 +181,6 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/instructorClasses/:id')
 
     app.get('/classbyname',async(req,res)=>{
       const name=req.query.name
