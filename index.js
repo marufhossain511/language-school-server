@@ -33,6 +33,7 @@ async function run() {
     const pendingClassCollection = client.db("summerSchoolDB").collection("pendingClasses");
     const cartCollection = client.db("summerSchoolDB").collection("carts");
     const paymentCollection = client.db("summerSchoolDB").collection("payments");
+    const enrolledClassCollection = client.db("summerSchoolDB").collection("enrolledClass");
 
 
     // payment-intent
@@ -62,6 +63,7 @@ async function run() {
       const deleteResult = await cartCollection.deleteMany(query)
       res.send({insertedResult,deleteResult})
     })
+
     app.get('/payments',async(req,res)=>{
       const email=req.query.email
       const result = await paymentCollection.find({email:email}).toArray()
@@ -102,6 +104,18 @@ async function run() {
       res.send(result)
     })
 
+    // enrolledClasses
+    app.post('/enrolledclass',async(req,res)=>{
+      const classes=req.body
+      const result = await enrolledClassCollection.insertMany(classes)
+      res.send(result)
+    })
+
+    app.get('/enrolledclasses',async(req,res)=>{
+      const email = req.query.email
+      const result =await enrolledClassCollection.find({email:email}).toArray()
+      res.send(result)     
+    })
 
     // users apis
     app.post('/users',async(req,res)=>{
