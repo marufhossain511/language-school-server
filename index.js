@@ -85,11 +85,37 @@ async function run() {
 
     app.post('/payments',async(req,res)=>{
       const payment=req.body
+      // console.log(payment);
       const insertedResult= await paymentCollection.insertOne(payment) 
-      const query={_id: {$in: payment.cartItems.map(id=> new ObjectId(id))}}
-      const deleteResult = await cartCollection.deleteMany(query)
+      const query={_id: new ObjectId(payment.cartItems)}
+      const deleteResult = await cartCollection.deleteOne(query)
       res.send({insertedResult,deleteResult})
     })
+    
+    app.get('/payment/:id',async(req,res)=>{
+      const id = req.params.id
+      const query={_id:new ObjectId(id)}
+      const result = await cartCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.patch('/classes',async(req,res)=>{
+      const classId=req.body
+      // console.log(classId);
+      const query={_id: new ObjectId(classId.classId)}
+      const classObj=await classCollection.findOne(query)
+      if(classObj){
+        const updateDoc={
+          $set:{       
+             availableSeat:classObj.availableSeat - 1,
+             students:classObj.students + 1
+          }
+        }
+        const result = await classCollection.updateOne(query,updateDoc)
+        res.send(result)
+      }
+    })
+
 
     app.get('/payments',async(req,res)=>{
       const email=req.query.email
@@ -134,7 +160,7 @@ async function run() {
     // enrolledClasses
     app.post('/enrolledclass',async(req,res)=>{
       const classes=req.body
-      const result = await enrolledClassCollection.insertMany(classes)
+      const result = await enrolledClassCollection.insertOne(classes)
       res.send(result)
     })
 
@@ -200,6 +226,8 @@ async function run() {
         const result =await classCollection.find().toArray()
         res.send(result)
     })
+
+   
 
   
 
@@ -296,6 +324,7 @@ async function run() {
       const result=await pendingClassCollection.find(query).toArray()
       res.send(result)
     })
+
 
     app.get('/pendingClasses',async(req,res)=>{
       const result = await pendingClassCollection.find().toArray()
