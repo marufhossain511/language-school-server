@@ -188,7 +188,7 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/makeadminuser/:id',async(req,res)=>{
+    app.patch('/makeadminuser/:id',verifyJWT,verifyAdmin,async(req,res)=>{
       const id = req.params.id
       // console.log(id);
       const query={_id: new ObjectId(id)}
@@ -201,7 +201,7 @@ async function run() {
       res.send(result)
     })
 
-     app.patch('/makeinstructoruser/:id',async(req,res)=>{
+     app.patch('/makeinstructoruser/:id',verifyJWT,verifyAdmin,async(req,res)=>{
       const id = req.params.id
       console.log(id);
       const query={_id: new ObjectId(id)}
@@ -221,8 +221,18 @@ async function run() {
         res.send(result)
     })
 
+    // verify Instructor
+    const verifyInstructor=async(req,res,next)=>{
+      const email=req.decoded.email
+      const query={email:email}
+      const user = await userCollection.findOne(query)
+      if(user?.role !== 'instructor'){
+          return res.status(403).send({error:true,message:'forbidden'})
+      }
+      next()
+  }
     
-    app.patch('/classes',async(req,res)=>{
+    app.patch('/classes',verifyJWT,verifyInstructor,async(req,res)=>{
       const classId=req.body
       // console.log(classId);
       const query={_id: new ObjectId(classId.classId)}
