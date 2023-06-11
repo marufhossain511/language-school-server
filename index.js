@@ -99,22 +99,6 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/classes',async(req,res)=>{
-      const classId=req.body
-      // console.log(classId);
-      const query={_id: new ObjectId(classId.classId)}
-      const classObj=await classCollection.findOne(query)
-      if(classObj){
-        const updateDoc={
-          $set:{       
-             availableSeat:classObj.availableSeat - 1,
-             students:classObj.students + 1
-          }
-        }
-        const result = await classCollection.updateOne(query,updateDoc)
-        res.send(result)
-      }
-    })
 
 
     app.get('/payments',async(req,res)=>{
@@ -227,7 +211,24 @@ async function run() {
         res.send(result)
     })
 
-   
+    
+    app.patch('/classes',async(req,res)=>{
+      const classId=req.body
+      // console.log(classId);
+      const query={_id: new ObjectId(classId.classId)}
+      const classObj=await classCollection.findOne(query)
+      if(classObj){
+        const updateDoc={
+          $set:{       
+             availableSeat:classObj.availableSeat - 1,
+             students:classObj.students + 1
+          }
+        }
+        const result = await classCollection.updateOne(query,updateDoc)
+        res.send(result)
+      }
+    })
+
 
   
 
@@ -331,16 +332,10 @@ async function run() {
       res.send(result)
     })
 
-    // app.get('/myclasses/:id',async(req,res)=>{
-    //   const id =req.params.id
-    //   const query={_id: new ObjectId(id)}
-    //   const result = await pendingClassCollection.findOne(query)
-    //   res.send(result)
-    // })
 
 
     app.get('/popularclasses',async(req,res)=>{
-      const cursor= await classCollection.find().limit(6).toArray()
+      const cursor= await classCollection.find().sort({students:-1}).limit(6).toArray()
       res.send(cursor)
     })
 
