@@ -80,6 +80,16 @@ async function run() {
       });
     });
 
+    // Use verifyJWT before using verifyAdmin
+    const verifyAdmin=async(req,res,next)=>{
+      const email=req.decoded.email
+      const query={email:email}
+      const user = await userCollection.findOne(query)
+      if(user?.role !== 'admin'){
+          return res.status(403).send({error:true,message:'forbidden'})
+      }
+      next()
+     }
 
     // payment
 
@@ -128,7 +138,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/carts',async(req,res)=>{
+    app.get('/carts',verifyJWT,async(req,res)=>{
       const email=req.query.email
       const result = await cartCollection.find({email:email}).toArray()
       res.send(result)
@@ -148,7 +158,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/enrolledclasses',async(req,res)=>{
+    app.get('/enrolledclasses',verifyJWT,async(req,res)=>{
       const email = req.query.email
       const result =await enrolledClassCollection.find({email:email}).toArray()
       res.send(result)     
@@ -167,7 +177,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users',async(req,res)=>{
+    app.get('/users',verifyJWT,verifyAdmin,async(req,res)=>{
       const result = await userCollection.find().toArray()
       res.send(result)
     })
