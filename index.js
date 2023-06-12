@@ -39,7 +39,10 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  useNewUrlParser:true,
+  useUnifiedTopology:true,
+  maxPoolSize:10,
 });
 
 async function run() {
@@ -160,7 +163,7 @@ async function run() {
 
     app.get('/enrolledclasses',verifyJWT,async(req,res)=>{
       const email = req.query.email
-      const result =await enrolledClassCollection.find({email:email}).toArray()
+      const result =await enrolledClassCollection.find({email:email}).sort({date:-1}).toArray()
       res.send(result)     
     })
 
@@ -232,7 +235,7 @@ async function run() {
       next()
   }
     
-    app.patch('/classes',verifyJWT,verifyInstructor,async(req,res)=>{
+    app.patch('/classes',async(req,res)=>{
       const classId=req.body
       // console.log(classId);
       const query={_id: new ObjectId(classId.classId)}
